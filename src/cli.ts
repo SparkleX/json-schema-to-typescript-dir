@@ -1,8 +1,8 @@
-import { compile, compileFromFile } from 'json-schema-to-typescript'
+import { compile } from 'json-schema-to-typescript'
 import * as fs from "fs";
-import { Dirent } from "fs"
 import * as jsonfile from "jsonfile"
 import {argv} from "yargs"
+import * as camelCase from 'camelcase';
 
 const output = argv["output"] as string;
 const input = argv["input"] as string;
@@ -37,56 +37,17 @@ async function processFile (file:string):Promise<void> {
     outdir = output + "/" + workdir.substr(input.length);
   }
   let schema = jsonfile.readFileSync(file);
-  var imports = await createImports(schema, file);
-  var script = await compile(schema, 'MySchema', {
+  const tsFilename = camelCase(schema.title, {pascalCase: true});
+  var script = await compile(schema, tsFilename, {
     cwd: workdir,
-    bannerComment : imports,
-    declareExternallyReferenced : false,
+    bannerComment: "/* eslint-disable prettier/prettier */\n/* tslint:disable */\n/* Generated, DO NOT MODIFY BY HAND */ \n",
     style: {
       useTabs : true
     }
   });
-  const filename = schema.title;
+  
   fs.mkdirSync(outdir, { recursive: true });
-  fs.writeFileSync( `${outdir}/${filename}.ts`,script);
+  fs.writeFileSync( `${outdir}/${tsFilename}.ts`,script);
 }
-
-function getClassName(refFile:string, schemaFile:string):string {
-  const index = schemaFile.lastIndexOf("/");
-  var workdir = schemaFile.substr(0, index);
-  let schema = jsonfile.readFileSync(`${workdir}/${refFile}`);
-  return schema.title;
-}
-async function createImports (schema:any, schemaFile:string):Promise<string> {
-  var imports = "";
-  var importedFiles:any = {};
-  for(var prop in schema.properties) {
-    var p = schema.properties[prop];
-    if(p.items!==undefined) {
-      p = p.items;
-    }
-    if(p.$ref===undefined) {
-      continue;
-    }
-    if(p.$ref.startsWith("#")) {
-      continue;
-    }
-    if(importedFiles[p.$ref] !== undefined) {
-      continue;
-    }
-
-    const index = p.$ref.lastIndexOf("/");
-    var workdir = p.$ref.substr(0, index);
-    if(workdir=="") {
-      workdir=".";
-    }
-
-    var className = getClassName(p.$ref, schemaFile);
-    imports +=`import {${className}} from "${workdir}/${className}";\r\n`;
-    importedFiles[p.$ref] = true;
-  }
-  return imports;
-}
-
 
 scanFolder(input);

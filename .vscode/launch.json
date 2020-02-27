@@ -12,10 +12,10 @@
                 "<node_internals>/**"
             ],
             "args": ["--input=schema","--output=output"],
-            "program": "${workspaceFolder}/bin/cli.js",
+            "program": "${workspaceFolder}/dist/cli.js",
             "preLaunchTask": "tsc: build - tsconfig.json",
             "outFiles": [
-                "${workspaceFolder}/bin/**/*.js"
+                "${workspaceFolder}/dist/**/*.js"
             ]
         }
     ]
