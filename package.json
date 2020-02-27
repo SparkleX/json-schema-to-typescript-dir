@@ -7,9 +7,8 @@
     "json2tsdir": "./dist/cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Sun, Xufei",
   "license": "ISC",
   "dependencies": {
     "camelcase": "^5.3.1",
@@ -20,7 +19,7 @@
   "devDependencies": {
     "@types/jsonfile": "^5.0.0",
     "@types/yargs": "^15.0.4",
-    "ts-node": "^8.6.2",
     "typescript": "^3.8.2"
-  }
+  },
+  "homepage": "https://github.com/SparkleX/json-schema-to-typescript-dir"
 }
