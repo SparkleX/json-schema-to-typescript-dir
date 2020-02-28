@@ -8,6 +8,16 @@ import * as camelCase from 'camelcase';
 const output = argv["output"] as string;
 const input = argv["input"] as string;
 
+if(output==undefined) {
+  console.error("'--input=path' required");
+  process.exit(-1);
+}
+
+if(output==undefined) {
+  console.error("'--output=path' required");
+  process.exit(-1);
+}
+
 async function scanFolder (input:string):Promise<void> { 
   let files = fs.readdirSync(input, {withFileTypes:true});
   for(let file of files) {
@@ -19,7 +29,7 @@ async function scanFolder (input:string):Promise<void> {
     }
     var fullFilePath = `${input}/${file.name}`;
     console.info(fullFilePath);
-    await processFile(fullFilePath);
+    await processFile(fullFilePath, file.name);
   }
   for(let file of files) {
     if (file.isFile()) {
@@ -29,7 +39,7 @@ async function scanFolder (input:string):Promise<void> {
     await scanFolder(fullFilePath);
   } 
 }
-async function processFile (file:string):Promise<void> {
+async function processFile (file:string, shortFileName:string):Promise<void> {
   const index = file.lastIndexOf("/");
   var workdir = "";
   var outdir = output;
@@ -38,7 +48,11 @@ async function processFile (file:string):Promise<void> {
     outdir = output + "/" + workdir.substr(input.length);
   }
   let schema = jsonfile.readFileSync(file);
-  const tsFilename = camelCase(schema.title, {pascalCase: true});
+  let tsFilename = shortFileName.substr(0, shortFileName.length-5);
+  if(schema.title!==undefined) {
+    tsFilename = schema.title;
+  }
+  tsFilename = camelCase(tsFilename, {pascalCase: true});
   var script = await compile(schema, tsFilename, {
     cwd: workdir,
     bannerComment: "/* eslint-disable prettier/prettier */\n/* tslint:disable */\n/* Generated, DO NOT MODIFY BY HAND */ \n",
